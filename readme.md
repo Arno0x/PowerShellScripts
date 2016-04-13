@@ -23,5 +23,12 @@ The scripts makes use of two hacks that might not work in future versions of Pow
 
 I don't even understand why this is not made possible "by default" with the .Net API...
 
+proxyMeterpreterHideout.ps1
+----------------
+This script is the client side script for a meterpreter stage download obfuscation technique for a reverse_winhttp payload.
+Beware it does *NOT* work with the reverse_winhttpS payload.
+
+Further explanations in the script itself.
+
 ![bitcoin](https://dl.dropboxusercontent.com/s/imckco5cg0llfla/bitcoin-icon.png?dl=0) Like these scripts ? Tip me with bitcoins !
 ![address](https://dl.dropboxusercontent.com/s/9bd5p45xmqz72vw/bc_tipping_address.png?dl=0)
