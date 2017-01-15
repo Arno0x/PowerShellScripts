@@ -5,6 +5,21 @@ Author: Arno0x0x - [@Arno0x0x](http://twitter.com/Arno0x0x)
 
 This repository aims at publishing some of PowerShell scripts. No rocket science, just a few scripts I created either to learn PowerShell or to fit basic needs in my security veil.
 
+Invoke-SendReverseShell
+----------------
+This script sends a shell to a destination host (reverse shell). This is done:
+  - on one side by spawning a cmd.exe child process and redirecting its standard Input, Output and Error streams
+  - on the other side by either:
+    - directly opening a TCP socket to the remote host, or
+    - connecting through a proxy manually specified or by using the system's default one
+
+When using a proxy to connect to the remote host, the proxy must support the CONNECT method and allow it to the destination port. If the destination port doesn't seem allowed by the proxy, try to bind your listener on port 443 as it's very likely that the proxy will allow the CONNECT method at least on that port.
+
+The remote host simply has to listen on a TCP socket, for example:
+  - With netcat: `# nc -l -p <any_port>`
+  - With socat: `# socat TCP-L:<any_port>,fork,reuseaddr -`
+
+
 proxyTunnel.ps1
 ----------------
 This script creates a TCP tunnel towards a destination server through the system's default HTTP proxy, automatically handling upstream proxy authentication along the way if ever required. Tested OK with PowerShell v4.
