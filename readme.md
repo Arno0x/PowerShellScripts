@@ -5,6 +5,14 @@ Author: Arno0x0x - [@Arno0x0x](http://twitter.com/Arno0x0x)
 
 This repository aims at publishing some of PowerShell scripts. No rocket science, just a few scripts I created either to learn PowerShell or to fit basic needs in my security veil.
 
+Invoke-HideFileInLNK
+----------------
+This script creates a specifically forged link file (.lnk) to embed any type of file in it, as per the technique described here:
+https://www.phrozen.io/page/shortcuts-as-entry-points-for-malware-part-3
+
+The embedded file is first extracted from the link file using an inline VBS script, and the file is then called
+either directly (if it's an executable or a script), or throuh a so called "Final Command". See examples section from the Invoke-HideFileInLNK function.
+
 Invoke-SendReverseShell
 ----------------
 This script sends a shell to a destination host (reverse shell). This is done:
