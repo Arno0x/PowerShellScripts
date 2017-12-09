@@ -5,6 +5,12 @@ Author: Arno0x0x - [@Arno0x0x](http://twitter.com/Arno0x0x)
 
 This repository aims at publishing some of PowerShell scripts. No rocket science, just a few scripts I created either to learn PowerShell or to fit basic needs in my security veil.
 
+Invoke-MacroCreator
+----------------
+Invoke-MacroCreator is a powershell Cmdlet that allows for the creation of an MS-Word document embedding a VBA macro with various payload delivery and execution capabilities.
+
+Check the directory for further details and explanations.
+
 Invoke-EmbedInBatch
 ----------------
 Inspired by @xorrior, this scripts embeds and hide any type of payload within a batch file and then executes it given a command line specified as an argument. It proposes two different methods for achieving this trick, explained in the script header.
