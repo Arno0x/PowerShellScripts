@@ -531,7 +531,7 @@ function NormalizeCode() {
 	}
 
 	#---- Get the list of all variables
-	$varList = [regex]::matches($code, '_[a-zA-Z]+?_') | % Value | Select-Object -Unique
+	$varList = [regex]::matches($code, '_[a-zA-Z0-9]+?_') | % Value | Select-Object -Unique
 	if ($obfuscate) {
 		foreach ($var in $varList) {
 			$code = $code.Replace($var, (RandomString 6))
@@ -555,7 +555,7 @@ function NormalizeCode() {
 	}
 	
 	#---- Get the list of all functions and subs
-	$funcList = [regex]::matches($code, '#[a-zA-Z]+?#') | % Value | Select-Object -Unique
+	$funcList = [regex]::matches($code, '#[a-zA-Z0-9]+?#') | % Value | Select-Object -Unique
 	if ($obfuscate) {
 		foreach ($func in $funcList) {
 			$code = $code.Replace($func, (RandomString 9))
