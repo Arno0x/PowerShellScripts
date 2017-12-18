@@ -30,7 +30,7 @@ function Invoke-MacroCreator {
 		5. HTML, using IE:
 			The payload is embedded into a simple HTML file and then loaded over HTTP(S) from an Internet Explorer COM object. The generated 'index.html' file must be hosted on a web server.
 			The process seen performing network traffic is 'iexplorer.exe'
-		6. DNS devliery:
+		6. DNS delivery:
 			The payload is downloaded over a DNS request covert channel, in several chunks that are reassembled in memory.
 			It is required to own a domain name and to use the [@DNSDelivery](https://github.com/Arno0x/DNSDelivery) tool. 
 			When using DNSDelivery with Invoke-MacroCreator, the type of payload to deliver doesn't matter as it is not consummed by the macro.
@@ -263,6 +263,13 @@ function Invoke-MacroCreator {
         $word.DisplayAlerts = "wdAlertsNone"
 	}
 	
+	# Verify the AccessVBOM security settings
+	$accessVBOM = Get-ItemProperty -Path "HKCU:\Software\Microsoft\Office\$wordVersion\word\Security" | % AccessVBOM
+	if ($accessVBOM -eq 0) {
+		Write-Host -ForegroundColor Blue "[*] Modifying AccessVBOM registry setting to '1'"
+		New-ItemProperty -Path "HKCU:\Software\Microsoft\Office\$wordVersion\word\Security" -Name AccessVBOM -Value 1 -PropertyType DWORD -Force | Out-Null
+	}
+	
 	# Create the word document
 	$document = $word.documents.add()
 	$selection = $word.Selection 
@@ -493,6 +500,12 @@ function Invoke-MacroCreator {
 		Copy-Item $zipfileName $outWordFile
 		
 		Write-Host -ForegroundColor Green "`n[+] Added payload as a comment into [$outWordFile] file"
+	}
+	
+	# Restore AccessVBOM security settings
+	if ($accessVBOM -eq 0) {
+		Write-Host -ForegroundColor Blue "[*] Restoring AccessVBOM registry setting"
+		New-ItemProperty -Path "HKCU:\Software\Microsoft\Office\$wordVersion\word\Security" -Name AccessVBOM -Value 0 -PropertyType DWORD -Force | Out-Null
 	}
 }
 	
